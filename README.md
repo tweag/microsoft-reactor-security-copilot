@@ -44,4 +44,73 @@ Insecure Cookie Handling: The authenticateUser function sets a cookie with the u
 ```
 
  
+## Ignore files
+
+Let's ask Copilot:
+
+```console
+Why would it be a mistake to commit this file?
+```
+
+Copilot should say something like:
+
+```console
+
+Committing this file to a public repository would be a mistake due to several reasons:
+
+Sensitive Data Exposure: The file contains sensitive data such as database credentials (username and password), API keys, and server configuration details. If this file is committed to a public repository, anyone can access these details, leading to unauthorized access and potential data breaches.
+
+Security Misconfiguration: The file contains several insecure configurations such as running the server as a superuser, enabling debug mode, and allowing anonymous access to API endpoints. These configurations can be exploited by attackers to gain unauthorized access or perform malicious actions.
+
+Broken Authentication: The file contains weak session management configurations, which can be exploited for session hijacking.
+
+Injection: The file allows unrestricted file uploads, which can lead to arbitrary code execution if an attacker uploads a malicious file.
+
+Denial of Service (DoS): The file does not limit the log file size, which can lead to a DoS attack by filling up the disk space.
+
+Broken Access Control: The file exposes sensitive API endpoints without proper authentication, which can lead to unauthorized access.
+
+In general, it's a best practice to never commit sensitive data or insecure configurations to version control. Instead, use environment variables or secure secret management systems to handle sensitive data.
+
+```
+
+OK, let's ask it what a .gitignore file is
+
+```console
+What is a .gitignore file and how can it help prevent this file being committed to GitHub
+```
+
+OK great example from Copilot
+
+```console
+A .gitignore file is a text file that tells Git which files or folders to ignore in a project. It is typically placed at the root of your project directory. Each line in this file specifies a pattern. When Git sees a file that matches one of these patterns, it ignores it. This means it won't be included in commits or tracked by Git.
+
+In the case of the vuln.ini file, you can add its path to the .gitignore file to prevent it from being committed to GitHub. This is especially important for files that contain sensitive information, such as passwords, API keys, or other secrets.
+
+Here's an example of how to add vuln.ini to a .gitignore file:
+
+# Ignore the vuln.ini file
+ini
+If the vuln.ini file is in a subdirectory, you would include the path to the file from the root of your project:
+
+Remember, once a file is committed, it becomes part of the Git history and removing it later can be difficult. Therefore, it's best to add sensitive files to .gitignore before making any commits.
+```
+
+Open the directory. Add a new file.
+
+Open the inline edit and ask Copilot
+
+```console
+Add a rule to exclude vuln.ini
+```
+
+SImple!
+
+```python
+# Exclude vuln.ini
+vuln.ini
+```
+
+
+
 
