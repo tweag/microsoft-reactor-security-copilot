@@ -65,7 +65,21 @@ So here we see some examples of both OWASP Top 10 issues (the ones we added comm
 
 We can now use Copilot to remediate these issues.
 
-<steps>
+Copilot may have asked you if you are curious on how to fix the SQL injection issue. For example:
+
+```console
+Can you explain how to prevent SQL Injection in JavaScript?
+```
+
+If you see this question click it, or paste it into Copilot chat.
+
+You should see an extensive explanation on how to resolve this issue.
+
+We can now try asking Copilot using inline chat how to fix the constructor. What result do you get?
+
+How select the broken access control statement and ask Copilot how to fix it.
+
+We can now move down each item in turn we have commented, and see how to resolve the vulnerability.
 
 
  
