@@ -11,11 +11,9 @@ This repository contains three example files:
 
 In order to work through this workshop you can open the code in either CodeSpaces, or clone the repository locally and open up the code in your Copilot supported IDE.
 
-
-
 ## Introduction 
 
-The following REeactor workshop demonstrates how Copilot had been used to detect and fix security issues in example code bases.
+The following Reeactor workshop demonstrates how Copilot had been used to detect and fix security issues in example code bases.
 
 
 ## Detecting OWASP Top 10 Issues
@@ -25,13 +23,13 @@ We will now demonstrate how we can detect issues in the `vuln.js` file.
 Open up the cloned repository in your IDE, or in CodeSpaces. Next, select the `vun.js` file.
 
 
-Now select/hgihlight all of the code and ask Copilot chat the following:
+Now select/highlight all of the code and ask Copilot chat the following:
 
 ```console
 List the security vulnerabilities in this file
 ```
 
-We see a response similar to:
+You should see a response similar to the following:
 
 ```console
 The code provided contains several security vulnerabilities, each of which is commented with the corresponding OWASP Top 10 category. Here's a list of them:
@@ -57,35 +55,137 @@ Insecure Network Communication: The startApp function starts a server that simpl
 Insecure Cookie Handling: The authenticateUser function sets a cookie with the username when authentication is successful. This can expose the username to anyone who can read the cookies.
 ```
 
-So here we see some examples of both OWASP Top 10 issues (the ones we added comments to), plus other issues it detected.
+So here we see some examples of both OWASP Top 10 issues (the ones we added comments to), plus other issues it detected. Copilot can actually help us to remediate these issues. In many ways we can use Copilot like an ad-hoc SAST scanner in our IDE.
 
+Also, if we happened to be writing code Copilot has another benefit. Code it suggests shouldn't contain known insecure coding patterns. For example, it shouldn't recommend code that is vulnerable to an SQL injection attack! 
+
+So let's look at how we can fix these issues now. 
 
 
 ## Remediating the Issue
 
-We can now use Copilot to remediate these issues.
+We can now use Copilot to remediate the vulnerablilities in the code base, using a variety of features ranging from the `/fix` slash command to asking simple questions. 
 
-Copilot may have asked you if you are curious on how to fix the SQL injection issue. For example:
+Additionally as we use the Chat window, you may notice that Copilot will sugegst addiitonal quesitons. For example, Copilot may have asked you if you are curious on how to fix the SQL injection issue. A potential further quesiton you may see posed is:
 
 ```console
 Can you explain how to prevent SQL Injection in JavaScript?
 ```
 
-If you see this question click it, or paste it into Copilot chat.
+If you see this question click it. If not, you can paste it into Copilot chat.
 
-You should see an extensive explanation on how to resolve this issue.
+You should see an extensive explanation on how to resolve this issue. Here is a snippet of what I saw when designing the talk:
 
-We can now try asking Copilot using inline chat how to fix the constructor. What result do you get?
+```console
+Sure, to prevent SQL Injection in JavaScript, you should use parameterized queries or prepared statements. This ensures that the data passed into your SQL statements are treated strictly as data and not part of the SQL command.
 
-How select the broken access control statement and ask Copilot how to fix it.
+In the provided code, the saveToDatabase method is vulnerable to SQL Injection because it directly concatenates user-provided strings into an SQL query. Here's how you can fix it:
+```
 
-We can now move down each item in turn we have commented, and see how to resolve the vulnerability.
+```javascript
+// Assuming you're using a library like 'pg' for PostgreSQL
+const { Client } = require('pg');
+const client = new Client();
 
+// Connect to your database
+client.connect();
 
- 
+class BlogPost {
+    constructor(title, content, author) {
+        this.title = title;
+        this.content = content;
+        this.author = author;
+    }
+
+    // A3:2021 – Injection
+    // Now safe from SQL Injection
+    static async saveToDatabase(blogPost) {
+        const text = 'INSERT INTO blog_posts (title, content, author) VALUES ($1, $2, $3)';
+        const values = [blogPost.title, blogPost.content, blogPost.author];
+
+        // Parameterized query
+        await client.query(text, values);
+
+        console.log("Submission successful");
+    }
+}
+```
+
+```console
+In this revised code, $1, $2, and $3 are placeholders for the actual values. The client.query function automatically escapes these values to prevent SQL Injection.
+```
+
+So if we wanted to, we could use this code as a starting point to refactor our JavaScript to be more secure. 
+
+We can now try asking Copilot using inline chat how to fix the constructor. Select the constructor code, as ask it:
+
+```console
+How do I fix th security issues here
+```
+
+Copilot will now make a recommendation. You may notice, it is actually leveraging the fix functionality. The result I see is:
+
+```console
+To fix the security issues in the code, I would replace the plain text password storage with a secure hashing algorithm and implement proper input validation and sanitization to prevent SQL injection attacks.
+```
+So this is a pretty good starting point. We can `Accept` the fix as well if we want. 
+
+Let's move onto the the broken access control statement and ask Copilot how to fix it. Select the whole of the `Account` class. And use the inline editor:
+
+```console
+How would i refactor this to be more secure?
+```
+
+Copilot will now come back with a suggestion. We can check this:
+
+```javascript
+class Account {
+    constructor(user) {
+        this.user = user;
+    }
+
+    // A1:2021 – Broken Access Control
+    // Method allows any user to change any password
+    changePassword(username, newPassword) {
+        // Logic to change password without verifying the current user's permission
+        if (this.user.username === username) {
+            this.user.password = newPassword;
+            console.log(`Password for ${username} changed successfully`);
+        } else {
+            console.log(`Failed to change password. Invalid username: ${username}`);
+        }
+    }
+}
+```
+
+Ok so this was very much a toy function and the result might not be architectural the best approach in the grand scheme of things. We'd really want to add RBAC in here. You can `Accept` the change, and then in the Copilot chat window ask:
+
+```console
+How could I implement RBAC?
+```
+
+Copilot is now going to provide us with some basic steps and thoughts on how we could approach this. Pretty clever right!
+
+We have a stray function called `authenticateUser`, let's see what Copilot thiks about this. Open the inline menu and select the `Explain this` menu option.
+
+Here is a synopsis of what I see:
+
+```console
+The provided JavaScript function, authenticateUser, is designed to authenticate a user based on a username and password. It's a simple function that checks if the provided username and password match a hardcoded set of credentials: 'admin' for both username and password.
+```
+
+Ok with the function still highlighted, select the `/fix` option from the menu. It will now recommend we remove things such as the `debugger` statement e.g.
+
+```console
+GitHub Copilot
+To fix the code, I would add the missing import statement for the Cookies module and remove the unnecessary Debug.write and debugger statements.
+```
+
+So we've just seen some simple examples there of how we can fix issues, let's move onto `.gitignore` files. 
+
 ## Ignore files
 
-We can use .gitignore files t prevent commiting .ini files to the SCM. Open up the vuln.ini and ask Copilot:
+We can use .gitignore files to prevent commiting `.ini` and other configuration files to the Source Control management system (SCM). Let's open up the `vuln.ini` and ask Copilot about the configuration file:
 
 ```console
 Why would it be a mistake to commit this file?
@@ -113,13 +213,13 @@ In general, it's a best practice to never commit sensitive data or insecure conf
 
 ```
 
-OK, let's ask it what a .gitignore file is
+OK, let's ask it what a `.gitignore` file is in the Chat window:
 
 ```console
 What is a .gitignore file and how can it help prevent this file being committed to GitHub
 ```
 
-OK great example from Copilot:
+Copilot should now give you a response similar to:
 
 ```console
 A .gitignore file is a text file that tells Git which files or folders to ignore in a project. It is typically placed at the root of your project directory. Each line in this file specifies a pattern. When Git sees a file that matches one of these patterns, it ignores it. This means it won't be included in commits or tracked by Git.
@@ -135,15 +235,15 @@ If the vuln.ini file is in a subdirectory, you would include the path to the fil
 Remember, once a file is committed, it becomes part of the Git history and removing it later can be difficult. Therefore, it's best to add sensitive files to .gitignore before making any commits.
 ```
 
-Open the directory. Add a new file.
+Let's give thid a try then. Open the directory with the source code in the IDE and add a new file. Let's call this `.gitignore`
 
-Open the inline edit and ask Copilot
+Open the inline editor and ask Copilot the following: 
 
 ```console
 Add a rule to exclude vuln.ini
 ```
 
-Of this is pretty simple!
+Copilot will now suggest some code e.g. 
 
 ```python
 # Exclude vuln.ini
@@ -152,6 +252,7 @@ vuln.ini
 
 We could now rotate the secrets in our existing `.ini` file. Delete it/purge it from the repo, and then moving forward thse `.ini` files will not be committed. 
 
+So this was a nice simple approach. It's not bullet proof, but it's a layer of defense we can use!
 
 ## GHAS and Copilot
 
@@ -161,7 +262,7 @@ Autofix combines the power of GHAS and OpenAI to detect security issues and reco
 
 In order to complete this part of the workshop your company must have GHAS licenses and you should have the ability to switch on CodeQL and Autofix on your repository.
 
-You can check if it is enabled via the Settings > Code security and analysis screen under the Code scanning section.
+You can check if it is enabled via the `Settings > Cod`e security and analysis screen under the Code scanning section.
 
 Select the dropdown next to CodeQL analysis and select the Advanced option to add the CodeQL configuration file to the repository.
 
