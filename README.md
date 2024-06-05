@@ -262,7 +262,7 @@ Autofix combines the power of GHAS and OpenAI to detect security issues and reco
 
 In order to complete this part of the workshop your company must have GHAS licenses and you should have the ability to switch on CodeQL and Autofix on your repository.
 
-You can check if it is enabled via the `Settings > Cod`e security and analysis screen under the Code scanning section.
+You can check if it is enabled via the `Settings > Code` security and analysis screen under the Code scanning section.
 
 Select the dropdown next to CodeQL analysis and select the Advanced option to add the CodeQL configuration file to the repository.
 
@@ -272,12 +272,33 @@ Return back to the previous screen, and then check that Autofix for CodeQL (Beta
 
 Now we can see Autofix in action. Give CodeQL a few moments to create run the Actions workflow after committing the file. You can check progress on the Actions tab in GitHub. Let's edit our code to see AutoFix in action.
 
-If you look at the following block of code we can see Debug is set to False:
+Let's ask Copilot chat to generate a small Flask app for us:
+
+```console
+Can you generate a small Flask app?
+```
+
+Copilot now spits out some code similar to:
+
+```python
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Hello, World!"
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+If you look at the following block of code we can see a Debug flag. If it was set to false when Copilot generated your code:
 
 ```python
 app.run(debug=False)
 ```
-Change this to `True`:
+Change it to `True`:
 
 ```python
 app.run(debug=True)
